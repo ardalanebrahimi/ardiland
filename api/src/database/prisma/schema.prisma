@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  name         String
+  description  String
+  status       String   @default("experiment")
+  why          String
+  problem      String
+  currentState String
+  next         String
+  ctaLabel     String?
+  ctaUrl       String?
+  githubUrl    String?
+  demoUrl      String?
+  featured     Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  // v4 additions
+  iconInitials String?
+  iconColor    String?
+  image        String?
+  screenshots  String?  // JSON array stored as string
+  techStack    String?  // JSON array stored as string
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Essay {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  title     String
+  summary   String
+  content   String   // Now stores HTML from rich text editor
+  featured  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

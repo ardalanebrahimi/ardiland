@@ -1,0 +1,122 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: ardiland-app
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Build Frontend
+        run: npm run build:web -- --configuration=production
+
+      - name: Build Backend
+        run: npm run build:api
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy
+
+          # Copy backend build
+          cp -r dist/api/* deploy/
+
+          # Copy frontend build to public folder (served by backend)
+          mkdir -p deploy/public
+          cp -r dist/web/browser/* deploy/public/
+
+          # Copy Prisma schema and migrations
+          mkdir -p deploy/prisma
+          cp -r api/src/database/prisma/schema.prisma deploy/prisma/
+          cp -r api/src/database/prisma/migrations deploy/prisma/ 2>/dev/null || true
+
+          # Create package.json for production
+          cat > deploy/package.json << 'PKGJSON'
+          {
+            "name": "ardiland-api",
+            "version": "1.0.0",
+            "main": "main.js",
+            "scripts": {
+              "start": "node main.js",
+              "db:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
+              "db:seed": "node prisma/seed.js",
+              "postinstall": "prisma generate --schema=prisma/schema.prisma"
+            },
+            "dependencies": {
+              "@fastify/cookie": "^11.0.2",
+              "@fastify/cors": "^11.2.0",
+              "@fastify/helmet": "^13.0.2",
+              "@fastify/static": "^9.0.0",
+              "@prisma/client": "^5.22.0",
+              "bcryptjs": "^3.0.3",
+              "dotenv": "^17.2.3",
+              "fastify": "^5.7.1",
+              "prisma": "^5.22.0"
+            }
+          }
+          PKGJSON
+
+          # Create web.config for Azure App Service (IIS)
+          cat > deploy/web.config << 'WEBCONFIG'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="iisnode" path="main.js" verb="*" modules="iisnode"/>
+              </handlers>
+              <rewrite>
+                <rules>
+                  <rule name="NodeInspector" patternSyntax="ECMAScript" stopProcessing="true">
+                    <match url="^main.js\/debug[\/]?" />
+                  </rule>
+                  <rule name="StaticContent">
+                    <action type="Rewrite" url="public{REQUEST_URI}"/>
+                  </rule>
+                  <rule name="DynamicContent">
+                    <conditions>
+                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
+                    </conditions>
+                    <action type="Rewrite" url="main.js"/>
+                  </rule>
+                </rules>
+              </rewrite>
+              <iisnode node_env="production" watchedFiles="web.config;*.js"/>
+            </system.webServer>
+          </configuration>
+          WEBCONFIG
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deploy
+
+      - name: Run database migrations
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          startup-command: 'npm run db:migrate:deploy && npm start'

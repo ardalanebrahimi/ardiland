@@ -9,9 +9,12 @@
     "build:api": "nx build api",
     "build:web": "nx build web",
     "build": "nx run-many --target=build --all",
+    "db:generate": "prisma generate --schema=api/src/database/prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=api/src/database/prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=api/src/database/prisma/schema.prisma",
     "db:seed": "npx tsx api/src/database/prisma/seed.ts",
-    "db:studio": "prisma studio --schema=api/src/database/prisma/schema.prisma"
+    "db:studio": "prisma studio --schema=api/src/database/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=api/src/database/prisma/schema.prisma"
   },
   "private": true,
   "devDependencies": {
@@ -46,6 +49,7 @@
     "nx": "22.3.3",
     "prettier": "~3.6.2",
     "tslib": "^2.3.0",
+    "tsx": "^4.19.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
     "vitest": "^4.0.8"
@@ -61,6 +65,7 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/jwt": "^10.0.0",
+    "@fastify/static": "^9.0.0",
     "@prisma/client": "^5.22.0",
     "autoprefixer": "^10.4.23",
     "bcryptjs": "^3.0.3",

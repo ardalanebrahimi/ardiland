@@ -55,3 +55,6 @@ __screenshots__/
 
 # Claude Code local settings
 .claude/
+
+# Azure publish profile (contains secrets)
+AZURE_PUBLISH_PROFILE.xml

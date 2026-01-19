@@ -36,7 +36,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(adminRoutes, { prefix: '/api/admin' });
 
   // Serve static files in production
-  const staticPath = path.join(__dirname, 'public');
+  // In production, public folder is at the root level (../../public from api/src/)
+  const staticPath = path.join(__dirname, '..', '..', 'public');
   if (fs.existsSync(staticPath)) {
     await app.register(fastifyStatic, {
       root: staticPath,

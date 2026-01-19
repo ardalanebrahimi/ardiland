@@ -21,10 +21,11 @@ import { ThemeService } from '../../core/services/theme.service';
         </h1>
 
         <div class="flex flex-col md:flex-row gap-8 mb-12">
-          <div
-            class="w-32 h-32 rounded-full flex-shrink-0"
-            [class]="themeService.dark() ? 'bg-gray-800' : 'bg-gray-200'"
-          ></div>
+          <img
+            src="profile-pic.png"
+            alt="Ardalan Ebrahimi"
+            class="w-32 h-32 rounded-full flex-shrink-0 object-cover"
+          />
           <div>
             <h2
               class="text-xl font-medium mb-2"

@@ -19,7 +19,7 @@ import { ThemeService } from '../../../core/services/theme.service';
           <img
             [src]="themeService.dark() ? 'ardilan-logo-w-f-t.png' : 'ardilan-logo-b-f-t.png'"
             alt="Ardiland Studio"
-            class="h-10"
+            class="h-14"
           />
         </a>
 

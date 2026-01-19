@@ -15,12 +15,12 @@ import { ThemeService } from '../../../core/services/theme.service';
         : 'bg-white/95 border-gray-100'"
     >
       <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a
-          routerLink="/"
-          class="text-lg font-medium tracking-tight"
-          [class]="themeService.dark() ? 'text-white' : 'text-gray-900'"
-        >
-          Ardiland
+        <a routerLink="/" class="flex items-center">
+          <img
+            [src]="themeService.dark() ? 'ardilan-logo-w-f-t.png' : 'ardilan-logo-b-f-t.png'"
+            alt="Ardiland Studio"
+            class="h-10"
+          />
         </a>
 
         <!-- Desktop Nav -->
